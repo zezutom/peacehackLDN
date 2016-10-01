@@ -9,10 +9,10 @@ angular.module('myApp.view', ['ngRoute'])
   });
 }])
 
-.controller('ViewCtrl', ['$scope', 'nlp', function($scope, nlp) {
+.controller('ViewCtrl', ['$scope', '$http', 'nlp', function($scope, $http, nlp) {
     var vm = $scope;
 
-    vm.text = "Every inch of wall space is covered by a bookcase. Each bookcase has six shelves, going almost to the ceiling. Some bookshelves are stacked to the brim with hardback books: science, maths, history, and everything else. Other shelves have two layers of paperback science fiction, with the back layer of books propped up on old tissue boxes or lengths of wood, so that you can see the back layer of books above the books in front. And it still isn't enough. Books are overflowing onto the tables and the sofas and making little heaps under the windows.";
+    vm.text = "";
 
     vm.nouns = null;
     vm.adjectives = null;
@@ -20,46 +20,72 @@ angular.module('myApp.view', ['ngRoute'])
     vm.verbs = null;
     vm.values = null;
 
+    // Words identified as hateful
+    vm.hateSpeech = null;
+
+    // Resulting measure
+    vm.biggestOffender = null;
+
+    // HateBase
+    vm.htbase = null;
+
+    // Total (malicious) score
+    vm.score = 0.0;
+
+    $http.get('resources/hatebase_ethnicity.json').success(function (data) {
+        vm.htbase = data.data.datapoint;
+        console.log('successfully loaded hatebase');
+    }).error(function (data) {
+        console.log('error getting data from hatebase');
+    });
+
     vm.$watch('text', function (text) {
-        console.log(text);
+
         if (!text) {
             vm.nouns = null;
             vm.adjectives = null;
             vm.adverbs = null;
             vm.verbs = null;
             vm.values = null;
+            vm.hateSpeech = null;
+            vm.biggestOffender = null;
+            vm.htbase = null;
+            vm.score = 0.0;
             return;
         }
-        var pos = nlp.pos(text)
 
-        vm.nouns = pos.nouns().map(function(ele) {
-            return ele.normalised;
-        });
-        vm.nouns = _.uniq(vm.nouns);
-        vm.nouns = vm.nouns.join(', ');
+        var decimalNumberRegex = /^[+-]?\d+(\.\d+)?$/g;
+        vm.hateSpeech = new Array(text).map(function(txt) {
+            // This is now the whole text
+            var expr = txt.toLocaleLowerCase();
+            console.log(txt);
 
-        vm.adjectives = pos.adjectives().map(function(ele) {
-            return ele.normalised;
-        });
-        vm.adjectives = _.uniq(vm.adjectives);
-        vm.adjectives = vm.adjectives.join(', ');
+            // Break it down by words and pick the last word
+            var words = txt.split(/,?\s+/);
 
-        vm.adverbs = pos.adverbs().map(function(ele) {
-            return ele.normalised;
+            // Pick the last word
+            var word = words.pop().trim();
+            var offensiveItem = null;
+            if (word.length > 3) {
+                console.log(word);
+                offensiveItem = _.find(vm.htbase, function(item) {
+                    return item.vocabulary.indexOf(word) === 0;
+                });
+            }
+            if (offensiveItem != undefined) {
+                console.log(offensiveItem);
+                var x = offensiveItem.offensiveness;
+                if (x.search(decimalNumberRegex) >= 0) {
+                    vm.score += parseFloat(x);
+                }
+                console.log('your score is: ' + vm.score);
+                return offensiveItem;
+            }
+            return null;
         });
-        vm.adverbs = _.uniq(vm.adverbs);
-        vm.adverbs = vm.adverbs.join(', ');
 
-        vm.verbs = pos.verbs().map(function(ele) {
-            return ele.normalised;
+        vm.hateSpeech = _.filter(vm.hateSpeech, function (s) {
+            return s != null;
         });
-        vm.verbs = _.uniq(vm.verbs);
-        vm.verbs = vm.verbs.join(', ');
-
-        vm.values = pos.values().map(function(ele) {
-            return ele.normalised;
-        });
-        vm.values = _.uniq(vm.values);
-        vm.values = vm.values.join(', ');
     });
 }]);

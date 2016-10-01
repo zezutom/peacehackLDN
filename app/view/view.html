@@ -11,13 +11,14 @@
         </form>
     </div>
     <div class="col-md-6">
-        <div ng-if="hateSpeech">
-            <h4>Offensive words:</h4>
-            <p>{{ hateSpeech }}</p>
-        </div>
         <div ng-if="score">
-            <h4>Offensive Score:</h4>
-            <p>{{ score }}</p>
+            <span ng-repeat="i in scoreRange track by $index">
+                <img ng-src="resources/sad_face.ico" alt="Sad Face" width="24" height="24" />
+            </span>
+        </div>
+        <div ng-if="hateWord">
+            <h4>{{ hateWord.vocabulary }}</h4>
+            <p>{{ hateWord.meaning }}</p>
         </div>
     </div>
 </div>

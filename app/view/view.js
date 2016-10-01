@@ -23,14 +23,17 @@ angular.module('myApp.view', ['ngRoute'])
     // Words identified as hateful
     vm.hateSpeech = null;
 
-    // Resulting measure
-    vm.biggestOffender = null;
+    // The most recent hate word
+    vm.hateWord = null;
 
     // HateBase
     vm.htbase = null;
 
     // Total (malicious) score
     vm.score = 0.0;
+
+    // This is a hack around ng-repeat (see view.html)
+    vm.scoreRange = [];
 
     $http.get('resources/hatebase_ethnicity.json').success(function (data) {
         vm.htbase = data.data.datapoint;
@@ -48,9 +51,10 @@ angular.module('myApp.view', ['ngRoute'])
             vm.verbs = null;
             vm.values = null;
             vm.hateSpeech = null;
-            vm.biggestOffender = null;
+            vm.hateWord = null;
             vm.htbase = null;
             vm.score = 0.0;
+            vm.scoreRange = [];
             return;
         }
 
@@ -76,6 +80,8 @@ angular.module('myApp.view', ['ngRoute'])
             return s != null;
         });
 
+        vm.hateWord = _.last(vm.hateSpeech);
+
         var asFloat = function(x) {
             if (x != undefined && x.search(/^[+-]?\d+(\.\d+)?$/) >= 0) {
                 return parseFloat(x);
@@ -89,7 +95,13 @@ angular.module('myApp.view', ['ngRoute'])
             return x + y;
         }).value();
 
+        vm.scoreRange = [];
+        for (var i = 0; i < vm.score; i++) {
+            vm.scoreRange.push(i);
+        }
+
         console.log('total score: ' + vm.score);
+        console.log('score range: ' + vm.scoreRange);
         console.log('total words: ' + vm.hateSpeech.length);
     });
 }]);

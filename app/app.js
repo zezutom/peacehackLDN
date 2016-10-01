@@ -5,6 +5,7 @@ angular.module('myApp', [
   'ngRoute',
   'ngMap',
   'ui.bootstrap',
+  'nlpCompromise',
   'myApp.view',
   'myApp.version'
 ]).

@@ -54,31 +54,19 @@ angular.module('myApp.view', ['ngRoute'])
             return;
         }
 
-        var decimalNumberRegex = /^[+-]?\d+(\.\d+)?$/g;
-        vm.hateSpeech = new Array(text).map(function(txt) {
+        vm.hateSpeech = text.split(/,?\s+/).map(function(word) {
             // This is now the whole text
-            var expr = txt.toLocaleLowerCase();
-            console.log(txt);
+            var word = word.trim().toLocaleLowerCase();
+            console.log(word);
 
-            // Break it down by words and pick the last word
-            var words = txt.split(/,?\s+/);
-
-            // Pick the last word
-            var word = words.pop().trim();
             var offensiveItem = null;
             if (word.length > 3) {
-                console.log(word);
+                console.log("'" + word + "'");
                 offensiveItem = _.find(vm.htbase, function(item) {
                     return item.vocabulary.indexOf(word) === 0;
                 });
             }
             if (offensiveItem != undefined) {
-                console.log(offensiveItem);
-                var x = offensiveItem.offensiveness;
-                if (x.search(decimalNumberRegex) >= 0) {
-                    vm.score += parseFloat(x);
-                }
-                console.log('your score is: ' + vm.score);
                 return offensiveItem;
             }
             return null;
@@ -87,5 +75,21 @@ angular.module('myApp.view', ['ngRoute'])
         vm.hateSpeech = _.filter(vm.hateSpeech, function (s) {
             return s != null;
         });
+
+        var asFloat = function(x) {
+            if (x != undefined && x.search(/^[+-]?\d+(\.\d+)?$/) >= 0) {
+                return parseFloat(x);
+            }
+            return 0;
+        };
+
+        vm.score = _.chain(vm.hateSpeech).map(function (itm) {
+            return asFloat(itm.offensiveness);
+        }).reduce(function (x, y) {
+            return x + y;
+        }).value();
+
+        console.log('total score: ' + vm.score);
+        console.log('total words: ' + vm.hateSpeech.length);
     });
 }]);

@@ -32,6 +32,9 @@ angular.module('myApp.view', ['ngRoute'])
     // Total (malicious) score
     vm.score = 0;
 
+    // Show an engaging Twitter feed?
+    vm.showIncentive = false;
+
     // This is a hack around ng-repeat (see view.html)
     vm.scoreRange = [];
 
@@ -54,6 +57,7 @@ angular.module('myApp.view', ['ngRoute'])
             vm.hateWord = null;
             vm.htbase = null;
             vm.score = 0;
+            vm.showIncentive = false;
             vm.scoreRange = [];
             return;
         }
@@ -94,6 +98,8 @@ angular.module('myApp.view', ['ngRoute'])
         }).reduce(function (x, y) {
             return x + y;
         }).value();
+
+        vm.showIncentive = vm.score > 1;
 
         vm.scoreRange = [];
         for (var i = 0; i < vm.score; i++) {

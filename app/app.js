@@ -4,6 +4,7 @@
 angular.module('myApp', [
   'ngRoute',
   'ngMap',
+  'ngtweet',
   'ui.bootstrap',
   'nlpCompromise',
   'myApp.view',

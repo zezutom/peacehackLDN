@@ -9,7 +9,7 @@ angular.module('myApp.view', ['ngRoute'])
   });
 }])
 
-.controller('ViewCtrl', ['$scope', '$http', 'nlp', function($scope, $http, nlp) {
+.controller('ViewCtrl', ['$scope', '$http', function($scope, $http) {
     var vm = $scope;
 
     vm.text = "";
@@ -30,7 +30,7 @@ angular.module('myApp.view', ['ngRoute'])
     vm.htbase = null;
 
     // Total (malicious) score
-    vm.score = 0.0;
+    vm.score = 0;
 
     // This is a hack around ng-repeat (see view.html)
     vm.scoreRange = [];
@@ -53,7 +53,7 @@ angular.module('myApp.view', ['ngRoute'])
             vm.hateSpeech = null;
             vm.hateWord = null;
             vm.htbase = null;
-            vm.score = 0.0;
+            vm.score = 0;
             vm.scoreRange = [];
             return;
         }

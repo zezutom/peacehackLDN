@@ -40,9 +40,15 @@ angular.module('myApp.view', ['ngRoute'])
 
     $http.get('resources/hatebase_ethnicity.json').success(function (data) {
         vm.htbase = data.data.datapoint;
-        console.log('successfully loaded hatebase');
+        console.log('successfully loaded ethnicity hatebase');
+        $http.get('resources/hatebase_nationality.json').success(function(data) {
+            console.log('successfully loaded nationality hatebase');
+            vm.htbase = vm.htbase.concat(data.data.datapoint);
+        }).error(function(data) {
+            console.log('error getting nationality data from hatebase')
+        });
     }).error(function (data) {
-        console.log('error getting data from hatebase');
+        console.log('error getting ethnicity data from hatebase');
     });
 
     vm.$watch('text', function (text) {
@@ -55,36 +61,57 @@ angular.module('myApp.view', ['ngRoute'])
             vm.values = null;
             vm.hateSpeech = null;
             vm.hateWord = null;
-            vm.htbase = null;
             vm.score = 0;
             vm.showIncentive = false;
             vm.scoreRange = [];
             return;
         }
 
-        vm.hateSpeech = text.split(/,?\s+/).map(function(word) {
-            // This is now the whole text
-            var word = word.trim().toLocaleLowerCase();
-            console.log(word);
+        var findOffenders = function(phrase) {
+            // Remove (all!) white chars from the word, this is just a quick hack
+            // credit: http://stackoverflow.com/questions/4328500/how-can-i-strip-all-punctuation-from-a-string-in-javascript-using-regex
+            var phrase = phrase.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," ").trim();
 
-            var offensiveItem = null;
-            if (word.length > 3) {
-                console.log("'" + word + "'");
-                offensiveItem = _.find(vm.htbase, function(item) {
-                    return item.vocabulary.indexOf(word) === 0;
-                });
+            var offenders = [];
+            var lastOffender = null;
+
+            var maxIndex = -1;
+            if (phrase.length > 3) {
+                console.log("'" + phrase + "'");
+                // Does my phrase contain offensive words? Find the last offensive item.
+                for (var i = 0; i < vm.htbase.length; i++) {
+                    var item = vm.htbase[i];
+                    var vocab = item.vocabulary;
+                    if (phrase.includes(vocab)) {
+                        var index = phrase.indexOf(vocab);
+                        if (index > maxIndex) {
+                            lastOffender = vocab;
+                            maxIndex = index;
+                        }
+
+                        offenders.push(item);
+                    }
+                }
             }
-            if (offensiveItem != undefined) {
-                return offensiveItem;
-            }
-            return null;
-        });
+            console.log(offenders)
+            console.log('last offender: ' + lastOffender);
+            return {
+                offenders: offenders,
+                lastOffender: lastOffender
+            };
+        };
 
-        vm.hateSpeech = _.filter(vm.hateSpeech, function (s) {
-            return s != null;
+        var foundOffenders = findOffenders(text);
+        vm.hateSpeech = _.map(foundOffenders.offenders, function (itm) {
+            return itm;
         });
+        console.log('total words: ' + vm.hateSpeech.length);
 
-        vm.hateWord = _.last(vm.hateSpeech);
+        vm.hateWord = _.find(vm.hateSpeech, function (itm) {
+            return itm.vocabulary === foundOffenders.lastOffender;
+        });
+        console.log(foundOffenders.lastOffender);
+        console.log(vm.hateWord);
 
         var asFloat = function(x) {
             if (x != undefined && x.search(/^[+-]?\d+(\.\d+)?$/) >= 0) {
@@ -106,8 +133,8 @@ angular.module('myApp.view', ['ngRoute'])
             vm.scoreRange.push(i);
         }
 
+        console.log('db size: ' + vm.htbase.length);
         console.log('total score: ' + vm.score);
         console.log('score range: ' + vm.scoreRange);
-        console.log('total words: ' + vm.hateSpeech.length);
     });
 }]);

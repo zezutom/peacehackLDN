@@ -5,6 +5,7 @@ angular.module('myApp', [
   'ngRoute',
   'ngMap',
   'ngtweet',
+  'ngAnimate',
   'ui.bootstrap',
   'nlpCompromise',
   'myApp.view',

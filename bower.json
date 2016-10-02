@@ -13,6 +13,7 @@
     "html5-boilerplate": "^5.3.0",
     "ngmap": "^1.17.6",
     "angular-bootstrap":"^2.1.4",
+    "angular-animate":"^1.5.8",
     "underscore": "^1.8.3",
     "ngtweet": "0.6.1"
   }
